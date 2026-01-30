@@ -1,8 +1,8 @@
 #!/bin/sh
 # shellcheck disable=SC2015,SC3003,SC3060
 
-TARGET_URL="https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS54113"
-TARGET_DL_FILE="/var/pbr_tmp_fastly.json"
+TARGET_URL="https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS139057"
+TARGET_DL_FILE="/var/pbr_tmp_edgenext.json"
 TARGET_TABLE="inet fw4"
 TARGET_INTERFACE="wg0"
 
