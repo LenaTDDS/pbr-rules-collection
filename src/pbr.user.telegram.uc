@@ -1,13 +1,10 @@
-// Downloads Telegram CIDR list and adds them to the PBR user destination sets.
+// Downloads RIPE announced prefixes for Telegram AS 
 
 return function(api) {
         if (!api.compat || api.compat < 29) return;
 
-        let url = 'https://gitlab.com/fernvenue/telegram-cidr-list/-/raw/master/CIDR.txt';
         let iface = 'wg0';
-
-        let raw = api.download(url);
-        if (!raw) return;
+        let as_numbers = [ 'AS44907', 'AS62041', 'AS62014', 'AS59930', 'AS211157' ];
 
         let set4 = api.nftset(iface, '4');
         let set6 = api.nftset(iface, '6');
@@ -15,19 +12,26 @@ return function(api) {
         let prefixes4 = [];
         let prefixes6 = [];
 
-        let lines = split(raw, '\n');
+        for (let asn in as_numbers) {
+                let url = 'https://stat.ripe.net/data/announced-prefixes/data.json?resource=' + asn;
 
-        for (let line in lines) {
-                line = trim(line);
-                if (!line) continue;
+                let raw = api.download(url);
+                if (!raw) continue;
 
-                if (index(line, ':') < 0)
-                        push(prefixes4, line);
-                else
-                        push(prefixes6, line);
+                let data = json(raw);
+                if (!data || !data.data || !data.data.prefixes) continue;
+
+                for (let entry in data.data.prefixes) {
+                        if (!entry.prefix) continue;
+
+                        if (index(entry.prefix, ':') < 0)
+                                push(prefixes4, entry.prefix);
+                        else
+                                push(prefixes6, entry.prefix);
+                }
         }
 
-        for (let prefix in prefixes4)
+	for (let prefix in prefixes4)
                 api.nft4('add element ' + api.table + ' ' + set4 + ' { ' + prefix + ' }');
 
         for (let prefix in prefixes6)
